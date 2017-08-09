@@ -8,7 +8,6 @@ public class Interval implements Serializable{
     private long intervalTime;
 
     public Interval(String name, long intervalTime) {
-        super();
         this.name = name;
         this.intervalTime = intervalTime;
     }
@@ -20,4 +19,5 @@ public class Interval implements Serializable{
     public long getIntervalTime() {
         return intervalTime;
     }
+
 }

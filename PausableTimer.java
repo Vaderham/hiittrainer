@@ -24,6 +24,7 @@ public class PausableTimer{
             @Override
             public void onFinish() {
                 tickListener.OnTick(0);
+                tickListener.OnFinish();
                 isPaused = false;
             }
         };
