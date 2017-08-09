@@ -1,101 +1,165 @@
 package com.example.reaganharper.hiittrainer02;
 
-import android.media.Image;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements OnTickListener {
+import java.util.ArrayList;
 
+public class MainActivity extends AppCompatActivity {
+
+    static final int ADD_INTERVAL = 1;
+    static final int ZERO_CLOCK = 0;
     private long endTime;
-    private PausableTimer mainTimer;
+    private PausableTimer fullTimer;
+    private PausableTimer intervalTimer;
+    private RecyclerView intervalList;
+    private RecyclerView.Adapter intervalAdapter;
+    private RecyclerView.LayoutManager LayoutManager;
+    private ArrayList<Interval> mIntervals;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        NumberPicker minutes = (NumberPicker) findViewById(R.id.minutes);
-        pickerSetup(minutes);
-        NumberPicker seconds = (NumberPicker) findViewById(R.id.seconds);
-        pickerSetup(seconds);
+        mIntervals = new ArrayList<>();
 
+        intervalList = (RecyclerView) findViewById(R.id.recycler);
+        intervalList.setHasFixedSize(true);
+
+        LayoutManager = new LinearLayoutManager(this);
+        intervalList.setLayoutManager(LayoutManager);
+
+        intervalAdapter = new IntervalAdapter(this, mIntervals);
+        intervalList.setAdapter(intervalAdapter);
 
         final ImageButton play = (ImageButton) findViewById(R.id.play);
         ImageButton stop = (ImageButton) findViewById(R.id.stop);
+        final TextView intervalClock = (TextView) findViewById(R.id.intervalTimer);
+        final TextView fullClock = (TextView) findViewById(R.id.fullTimer);
+        Button addInterval = (Button) findViewById(R.id.addInterval);
+        Button reset = (Button) findViewById(R.id.reset);
+
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                endTime = getTime();
 
-                if (mainTimer == null){
+                if (fullTimer == null) {
                     Toast.makeText(MainActivity.this, "Play", Toast.LENGTH_SHORT).show();
-                    mainTimer = new PausableTimer(endTime, 1000, MainActivity.this);
-                    mainTimer.start();
+
+                    fullTimer = new PausableTimer(getFullTime(), 1000, new OnTickListener() {
+                        @Override
+                        public void OnTick(long timeLeft) {
+                            fullClock.setText(convertTime(timeLeft));
+                        }
+                        @Override
+                        public void OnFinish() {
+                            Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    intervalTimer = new PausableTimer(getFullTime(), 1000, new OnTickListener() {
+                        @Override
+                        public void OnTick(long timeLeft) {
+                            intervalClock.setText(convertTime(timeLeft));
+                        }
+
+                        @Override
+                        public void OnFinish() {
+                            Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    fullTimer.start();
+                    intervalTimer.start();
                     play.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-                }else if(mainTimer.getIsPaused() == true){
+                } else if (fullTimer.getIsPaused()) {
                     Toast.makeText(MainActivity.this, "Resume", Toast.LENGTH_SHORT).show();
-                    mainTimer.resume();
-                }else{
+                    fullTimer.resume(fullTimer.getCurrentTime());
+                    play.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+                } else {
                     Toast.makeText(MainActivity.this, "Pause", Toast.LENGTH_SHORT).show();
-                    mainTimer.pause();
+                    fullTimer.pause();
                     play.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
                 }
-
             }
         });
 
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mainTimer != null){
-                    mainTimer.stop();
+                if (fullTimer != null) {
+                    Toast.makeText(MainActivity.this, "Stop", Toast.LENGTH_SHORT).show();
+                    fullTimer.stop();
+                    endTime = ZERO_CLOCK;
                 }
-                mainTimer = null;
+                fullTimer = null;
+                play.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+            }
+        });
+
+        addInterval.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openAddInterval();
+            }
+        });
+
+        reset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                resetIntervalList();
             }
         });
 
     }
 
-    public void pickerSetup(NumberPicker pickerId){
-        pickerId.setMaxValue(60);
-        pickerId.setMinValue(0);
-        pickerId.setWrapSelectorWheel(true);
-    }
-
-    @Override
-    public void OnTick(long timeLeft) {
-        TextView clock = (TextView) findViewById(R.id.intervalTimer);
-        clock.setText(convertTime(timeLeft));
-    }
-
-    public long getTime(){
-        //Get value of Number pickers and convert to milliseconds from minutes and seconds.
-        NumberPicker minutes = (NumberPicker) findViewById(R.id.minutes);
-        long selectedMinutes = minutes.getValue() * 60000;
-
-        NumberPicker seconds = (NumberPicker) findViewById(R.id.seconds);
-        long selectedSeconds = seconds.getValue() * 1000;
-
-        //Add selected Minutes and seconds together
-        endTime = selectedMinutes + selectedSeconds;
-
+    public long getFullTime() {
+        for (int i = 0; i < mIntervals.size(); i++) {
+            endTime = endTime + mIntervals.get(i).getIntervalTime();
+        }
         return endTime;
     }
 
-    public String convertTime(long mills){
-
+    public String convertTime(long mills) {
         long seconds = (mills / 1000) % 60;
         long minutes = ((mills / (1000 * 60)) % 60);
-
-        return String.valueOf(minutes) + ":" + String.valueOf(seconds);
-
+        String convertedSeconds = String.format("%02d", seconds);
+        String convertedMinutes = String.format("%02d", minutes);
+        return convertedMinutes + ":" + convertedSeconds;
     }
 
+    public void openAddInterval() {
+        Intent addInterval = new Intent(MainActivity.this, IntervalSetupActivity.class);
+        startActivityForResult(addInterval, ADD_INTERVAL);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ADD_INTERVAL) {
+            if (resultCode == RESULT_OK) {
+                Interval returnedInterval = (Interval) data.getSerializableExtra("Interval");
+                mIntervals.add(returnedInterval);
+                intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
+            }
+        }
+    }
+
+    public void resetIntervalList() {
+        mIntervals.clear();
+        intervalAdapter.notifyDataSetChanged();
+    }
 
 }

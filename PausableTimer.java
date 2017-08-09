@@ -7,7 +7,8 @@ public class PausableTimer{
 
     private CountDownTimer timer;
     private OnTickListener tickListener;
-    private long currentTime;
+    private boolean isPaused;
+    private long mCurrentTime;
 
     public PausableTimer(long millisUntilFinished, long interval, OnTickListener listener){
 
@@ -17,18 +18,21 @@ public class PausableTimer{
             @Override
             public void onTick(long millisUntilFinished) {
                 tickListener.OnTick(millisUntilFinished);
-                currentTime = millisUntilFinished;
+                mCurrentTime = millisUntilFinished;
             }
 
             @Override
             public void onFinish() {
                 tickListener.OnTick(0);
+                tickListener.OnFinish();
+                isPaused = false;
             }
         };
     }
 
     public void start(){
         this.timer.start();
+        isPaused = false;
     }
 
     public void stop(){
@@ -38,15 +42,32 @@ public class PausableTimer{
 
     public void pause(){
         this.timer.cancel();
-        tickListener.OnTick(currentTime);
+        tickListener.OnTick(mCurrentTime);
+        isPaused = true;
     }
 
-    public void resume(){
-
+    public void resume(final long currentTime){
+        this.timer = new CountDownTimer(currentTime, 1000) {
+            @Override
+            public void onTick(long l) {
+                tickListener.OnTick(l);
+                mCurrentTime = l;
+            }
+            @Override
+            public void onFinish() {
+                tickListener.OnTick(0);
+            }
+        };
+        this.timer.start();
+        isPaused = false;
     }
 
     public long getCurrentTime(){
-        return currentTime;
+        return mCurrentTime;
+    }
+
+    public boolean getIsPaused(){
+        return isPaused;
     }
 
 }
