@@ -33,17 +33,14 @@ public class MainActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if(mIntervals != null) {
-            outState.putSerializable("Interval", mIntervals);
+            outState.putParcelableArrayList("Interval", mIntervals);
         }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if(savedInstanceState != null){
-            mIntervals = (ArrayList<Interval>) savedInstanceState.getSerializable("Interval");
-            intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
-        }
+
     }
 
     @Override
@@ -61,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
 
         intervalAdapter = new IntervalAdapter(this, mIntervals);
         intervalList.setAdapter(intervalAdapter);
+
+        if(savedInstanceState != null){
+            mIntervals = savedInstanceState.getParcelableArrayList("Interval");
+            intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
+        }
+
 
         final ImageButton play = (ImageButton) findViewById(R.id.play);
         ImageButton stop = (ImageButton) findViewById(R.id.stop);
@@ -109,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 if (fullTimer != null) {
                     Toast.makeText(MainActivity.this, "Stop", Toast.LENGTH_SHORT).show();
                     fullTimer.stop();
-                    intervalTimer.stop();
                     endTime = ZERO_CLOCK;
                 }
                 fullTimer = null;
@@ -156,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ADD_INTERVAL) {
             if (resultCode == RESULT_OK) {
-                Interval returnedInterval = (Interval) data.getSerializableExtra("Interval");
+                Interval returnedInterval = data.getParcelableExtra("Interval");
                 mIntervals.add(returnedInterval);
                 intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
             }
