@@ -2,7 +2,7 @@ package com.example.reaganharper.hiittrainer02;
 
 import java.io.Serializable;
 
-public class Interval implements Serializable{
+public class Interval implements Serializable {
 
     private String name;
     private long intervalTime;

@@ -1,6 +1,8 @@
 package com.example.reaganharper.hiittrainer02;
 
 import android.content.Intent;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,6 +30,23 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Interval> mIntervals;
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(mIntervals != null) {
+            outState.putSerializable("Interval", mIntervals);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState != null){
+            mIntervals = (ArrayList<Interval>) savedInstanceState.getSerializable("Interval");
+            intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -52,12 +71,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         play.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
 
                 if (fullTimer == null) {
                     Toast.makeText(MainActivity.this, "Play", Toast.LENGTH_SHORT).show();
-
                     fullTimer = new PausableTimer(getFullTime(), 1000, new OnTickListener() {
                         @Override
                         public void OnTick(long timeLeft) {
@@ -69,27 +88,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
-
-                    for(int i = 0; i < mIntervals.size();){
-                        long singleInterval = mIntervals.get(i).getIntervalTime();
-
-                        intervalTimer = new PausableTimer(singleInterval, 1000, new OnTickListener() {
-                            @Override
-                            public void OnTick(long timeLeft) {
-                                intervalClock.setText(convertTime(timeLeft));
-                            }
-
-                            @Override
-                            public void OnFinish() {
-
-                            }
-                        });
-                    }
-
-
-
                     fullTimer.start();
-                    intervalTimer.start();
+
                     play.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
                 } else if (fullTimer.getIsPaused()) {
                     Toast.makeText(MainActivity.this, "Resume", Toast.LENGTH_SHORT).show();
@@ -123,14 +123,12 @@ public class MainActivity extends AppCompatActivity {
                 openAddInterval();
             }
         });
-
         reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 resetIntervalList();
             }
         });
-
     }
 
     public long getFullTime() {
@@ -169,6 +167,5 @@ public class MainActivity extends AppCompatActivity {
         mIntervals.clear();
         intervalAdapter.notifyDataSetChanged();
     }
-
 
 }
