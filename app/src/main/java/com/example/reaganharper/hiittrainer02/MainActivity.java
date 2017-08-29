@@ -40,7 +40,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-
+        if(savedInstanceState != null){
+            ArrayList<Interval> recoveredArray = savedInstanceState.getParcelableArrayList("Interval");
+            for(int i = 0; i < recoveredArray.size(); i++){
+                mIntervals.add(recoveredArray.get(i));
+            }
+            intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
+        }
     }
 
     @Override
@@ -58,11 +64,6 @@ public class MainActivity extends AppCompatActivity {
 
         intervalAdapter = new IntervalAdapter(this, mIntervals);
         intervalList.setAdapter(intervalAdapter);
-
-        if(savedInstanceState != null){
-            mIntervals = savedInstanceState.getParcelableArrayList("Interval");
-            intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
-        }
 
 
         final ImageButton play = (ImageButton) findViewById(R.id.play);
