@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
+import android.widget.Toast;
 
 public class IntervalSetupActivity extends AppCompatActivity{
     public NumberPicker mMinutes;
@@ -46,13 +47,23 @@ public class IntervalSetupActivity extends AppCompatActivity{
     }
 
     public void confirmInterval(){
-        Interval interval = new Interval(getName(), getInterval());
+        if(nName.getText().toString().length() == 0){
+            Toast.makeText(this, "Enter a name", Toast.LENGTH_SHORT).show();
+        }
 
-        Intent returnIntent = new Intent();
-       // returnIntent.putExtra("Interval", interval);
-        returnIntent.putExtra("Interval", (Parcelable) interval);
-        setResult(RESULT_OK,returnIntent);
-        finish();
+        if(mMinutes.getValue() == 0 && mSeconds.getValue() == 0){
+            Toast.makeText(this, "Choose a time", Toast.LENGTH_SHORT).show();
+        }
+
+        if(nName.getText() != null && mMinutes.getValue() != 0 || mSeconds.getValue() != 0){
+            Interval interval = new Interval(getName(), getInterval());
+
+            Intent returnIntent = new Intent();
+            // returnIntent.putExtra("Interval", interval);
+            returnIntent.putExtra("Interval", (Parcelable) interval);
+            setResult(RESULT_OK,returnIntent);
+            finish();
+        }
     }
 
     public long getInterval(){

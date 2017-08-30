@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
     static final int ZERO_CLOCK = 0;
     private long endTime;
     private PausableTimer fullTimer;
-    private PausableTimer intervalTimer;
     private RecyclerView intervalList;
     private RecyclerView.Adapter intervalAdapter;
     private RecyclerView.LayoutManager LayoutManager;
@@ -32,20 +31,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if(mIntervals != null) {
+        if (mIntervals != null) {
             outState.putParcelableArrayList("Interval", mIntervals);
+        }
+        if (fullTimer != null && fullTimer.getCurrentTime() > 0) {
+            outState.putLong("Time left", fullTimer.getCurrentTime());
         }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             ArrayList<Interval> recoveredArray = savedInstanceState.getParcelableArrayList("Interval");
-            for(int i = 0; i < recoveredArray.size(); i++){
+            for (int i = 0; i < recoveredArray.size(); i++) {
                 mIntervals.add(recoveredArray.get(i));
             }
             intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
+            Long recoveredTimeLeft = savedInstanceState.getLong("Time left");
         }
     }
 
@@ -68,17 +71,14 @@ public class MainActivity extends AppCompatActivity {
 
         final ImageButton play = (ImageButton) findViewById(R.id.play);
         ImageButton stop = (ImageButton) findViewById(R.id.stop);
-        final TextView intervalClock = (TextView) findViewById(R.id.intervalTimer);
+        //       final TextView intervalClock = (TextView) findViewById(R.id.intervalTimer);
         final TextView fullClock = (TextView) findViewById(R.id.fullTimer);
         Button addInterval = (Button) findViewById(R.id.addInterval);
         Button reset = (Button) findViewById(R.id.reset);
 
-
         play.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
-
                 if (fullTimer == null) {
                     Toast.makeText(MainActivity.this, "Play", Toast.LENGTH_SHORT).show();
                     fullTimer = new PausableTimer(getFullTime(), 1000, new OnTickListener() {
@@ -86,14 +86,14 @@ public class MainActivity extends AppCompatActivity {
                         public void OnTick(long timeLeft) {
                             fullClock.setText(convertTime(timeLeft));
                         }
+
                         @Override
                         public void OnFinish() {
                             Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
+                            play.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
                         }
                     });
-
                     fullTimer.start();
-
                     play.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
                 } else if (fullTimer.getIsPaused()) {
                     Toast.makeText(MainActivity.this, "Resume", Toast.LENGTH_SHORT).show();
@@ -169,6 +169,10 @@ public class MainActivity extends AppCompatActivity {
     public void resetIntervalList() {
         mIntervals.clear();
         intervalAdapter.notifyDataSetChanged();
+    }
+
+    public void startFullTimer(){
+
     }
 
 }

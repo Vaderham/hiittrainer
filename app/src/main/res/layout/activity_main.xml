@@ -70,7 +70,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@android:color/darker_gray" />
+        android:background="@android:color/black" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -83,9 +83,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/recycler"
-        android:scrollbars=""></android.support.v7.widget.RecyclerView>
+        android:scrollbars=""
+    ></android.support.v7.widget.RecyclerView>
 
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"></View>
 
     <Button
         android:id="@+id/addInterval"
