@@ -17,16 +17,24 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static com.example.reaganharper.hiittrainer02.R.id.intervalTimer;
+import static com.example.reaganharper.hiittrainer02.R.id.play;
+
 public class MainActivity extends AppCompatActivity {
 
     static final int ADD_INTERVAL = 1;
     static final int ZERO_CLOCK = 0;
     private long endTime;
     private PausableTimer fullTimer;
+    private PausableTimer intervalTimer;
     private RecyclerView intervalList;
     private RecyclerView.Adapter intervalAdapter;
     private RecyclerView.LayoutManager LayoutManager;
     private ArrayList<Interval> mIntervals;
+    private TextView mfullClock;
+    private ImageButton mPlay;
+    private int counter;
+    private TextView mIntervalCLock;
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -40,21 +48,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState != null) {
-            ArrayList<Interval> recoveredArray = savedInstanceState.getParcelableArrayList("Interval");
-            for (int i = 0; i < recoveredArray.size(); i++) {
-                mIntervals.add(recoveredArray.get(i));
-            }
-            intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
-            Long recoveredTimeLeft = savedInstanceState.getLong("Time left");
-        }
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         mIntervals = new ArrayList<>();
@@ -68,41 +64,50 @@ public class MainActivity extends AppCompatActivity {
         intervalAdapter = new IntervalAdapter(this, mIntervals);
         intervalList.setAdapter(intervalAdapter);
 
-
-        final ImageButton play = (ImageButton) findViewById(R.id.play);
+        mPlay = (ImageButton) findViewById(R.id.play);
         ImageButton stop = (ImageButton) findViewById(R.id.stop);
-        //       final TextView intervalClock = (TextView) findViewById(R.id.intervalTimer);
+
+        final TextView intervalClock = (TextView) findViewById(R.id.intervalTimer);
+        mIntervalCLock = intervalClock;
+
         final TextView fullClock = (TextView) findViewById(R.id.fullTimer);
+        mfullClock = fullClock;
+
         Button addInterval = (Button) findViewById(R.id.addInterval);
         Button reset = (Button) findViewById(R.id.reset);
 
-        play.setOnClickListener(new View.OnClickListener() {
+        if (savedInstanceState != null) {
+            ArrayList<Interval> recoveredArray = savedInstanceState.getParcelableArrayList("Interval");
+            for (int i = 0; i < recoveredArray.size(); i++) {
+                mIntervals.add(recoveredArray.get(i));
+            }
+            intervalAdapter.notifyItemInserted(intervalAdapter.getItemCount());
+            Long recoveredTimeLeft = savedInstanceState.getLong("Time left");
+        }
+
+
+        mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fullTimer == null) {
-                    Toast.makeText(MainActivity.this, "Play", Toast.LENGTH_SHORT).show();
-                    fullTimer = new PausableTimer(getFullTime(), 1000, new OnTickListener() {
-                        @Override
-                        public void OnTick(long timeLeft) {
-                            fullClock.setText(convertTime(timeLeft));
-                        }
 
-                        @Override
-                        public void OnFinish() {
-                            Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
-                            play.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
-                        }
-                    });
+                if(fullTimer == null) {
+                    setupFullTimer();
+                    setupIntervalTimer();
+                }
+                if(fullTimer.getTimerState() == PausableTimer.TimerState.STOPPED){
                     fullTimer.start();
-                    play.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-                } else if (fullTimer.getIsPaused()) {
+     //               intervalTimer.start();
+                    mPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+                }else if(fullTimer.getTimerState() == PausableTimer.TimerState.PAUSED){
                     Toast.makeText(MainActivity.this, "Resume", Toast.LENGTH_SHORT).show();
                     fullTimer.resume(fullTimer.getCurrentTime());
-                    play.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
-                } else {
+    //                intervalTimer.resume(intervalTimer.getCurrentTime());
+                    mPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
+                }else if(fullTimer.getTimerState() == PausableTimer.TimerState.RUNNING){
                     Toast.makeText(MainActivity.this, "Pause", Toast.LENGTH_SHORT).show();
                     fullTimer.pause();
-                    play.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+            //        intervalTimer.pause();
+                    mPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
                 }
             }
         });
@@ -110,13 +115,13 @@ public class MainActivity extends AppCompatActivity {
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (fullTimer != null) {
+                if (fullTimer.getTimerState() != PausableTimer.TimerState.STOPPED) {
                     Toast.makeText(MainActivity.this, "Stop", Toast.LENGTH_SHORT).show();
                     fullTimer.stop();
                     endTime = ZERO_CLOCK;
+                    fullClock.setText("00.00");
                 }
-                fullTimer = null;
-                play.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+                mPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
             }
         });
 
@@ -171,8 +176,40 @@ public class MainActivity extends AppCompatActivity {
         intervalAdapter.notifyDataSetChanged();
     }
 
-    public void startFullTimer(){
-
+    public long getSingleInterval(int counter){
+        return mIntervals.get(counter).getIntervalTime();
     }
 
+    public void setupFullTimer(){
+        fullTimer = new PausableTimer(getFullTime(), 1000, new OnTickListener() {
+            @Override
+            public void OnTick(long timeLeft) {
+                mfullClock.setText(convertTime(timeLeft));
+            }
+
+            @Override
+            public void OnFinish() {
+                Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
+                mPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
+            }
+        });
+    }
+
+    public void setupIntervalTimer(){
+        if(counter < mIntervals.size()) {
+               PausableTimer intervalTimer = new PausableTimer(getSingleInterval(counter), 1000, new OnTickListener() {
+                @Override
+                public void OnTick(long timeLeft) {
+                    mIntervalCLock.setText(convertTime(timeLeft));
+                }
+
+                @Override
+                public void OnFinish() {
+                    counter ++;
+                    setupIntervalTimer();
+                }
+            });
+            intervalTimer.start();
+        }
+    }
 }

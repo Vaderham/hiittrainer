@@ -30,6 +30,7 @@
             app:npMaxValue="60"
             app:npDefaultValue="0"
             android:id="@+id/minutes"
+            app:npTextSize="30dp"
             ></biz.kasual.materialnumberpicker.MaterialNumberPicker>
 
 
@@ -43,10 +44,10 @@
         <biz.kasual.materialnumberpicker.MaterialNumberPicker
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:npBackgroundColor="@color/colorPrimaryDark"
             android:id="@+id/seconds"
             app:npMaxValue="60"
             app:npMinValue="0"
+            app:npTextSize="30dp"
             app:npDefaultValue="0"
             ></biz.kasual.materialnumberpicker.MaterialNumberPicker>
 

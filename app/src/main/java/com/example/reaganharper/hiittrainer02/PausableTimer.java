@@ -2,17 +2,23 @@ package com.example.reaganharper.hiittrainer02;
 
 import android.os.CountDownTimer;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
+
 
 public class PausableTimer{
 
     private CountDownTimer timer;
     private OnTickListener tickListener;
-    private boolean isPaused;
+    public enum TimerState {
+        STOPPED, RUNNING, PAUSED
+    }
+    private TimerState timerState;
     private long mCurrentTime;
 
     public PausableTimer(long millisUntilFinished, long interval, OnTickListener listener){
 
         tickListener = listener;
+        timerState = TimerState.STOPPED;
 
         this.timer = new CountDownTimer(millisUntilFinished, interval) {
             @Override
@@ -25,14 +31,14 @@ public class PausableTimer{
             public void onFinish() {
                 tickListener.OnTick(0);
                 tickListener.OnFinish();
-                isPaused = false;
+                timerState = TimerState.STOPPED;
             }
         };
     }
 
     public void start(){
         this.timer.start();
-        isPaused = false;
+        timerState = TimerState.RUNNING;
     }
 
     public void stop(){
@@ -43,7 +49,7 @@ public class PausableTimer{
     public void pause(){
         this.timer.cancel();
         tickListener.OnTick(mCurrentTime);
-        isPaused = true;
+        timerState = TimerState.PAUSED;
     }
 
     public void resume(final long currentTime){
@@ -59,15 +65,15 @@ public class PausableTimer{
             }
         };
         this.timer.start();
-        isPaused = false;
+        timerState = TimerState.RUNNING;
     }
 
     public long getCurrentTime(){
         return mCurrentTime;
     }
 
-    public boolean getIsPaused(){
-        return isPaused;
+    public TimerState getTimerState(){
+        return timerState;
     }
 
 }

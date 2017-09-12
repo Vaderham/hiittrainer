@@ -2,7 +2,6 @@ package com.example.reaganharper.hiittrainer02;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import java.io.Serializable;
 
 public class Interval implements Serializable, Parcelable {
