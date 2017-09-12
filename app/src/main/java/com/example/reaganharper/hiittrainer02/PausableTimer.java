@@ -2,9 +2,6 @@ package com.example.reaganharper.hiittrainer02;
 
 import android.os.CountDownTimer;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-
-
 public class PausableTimer{
 
     private CountDownTimer timer;

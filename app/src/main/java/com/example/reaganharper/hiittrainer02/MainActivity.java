@@ -101,12 +101,12 @@ public class MainActivity extends AppCompatActivity {
                 }else if(fullTimer.getTimerState() == PausableTimer.TimerState.PAUSED){
                     Toast.makeText(MainActivity.this, "Resume", Toast.LENGTH_SHORT).show();
                     fullTimer.resume(fullTimer.getCurrentTime());
-    //                intervalTimer.resume(intervalTimer.getCurrentTime());
+                    intervalTimer.resume(intervalTimer.getCurrentTime());
                     mPlay.setBackgroundResource(R.drawable.ic_pause_circle_outline_black_24dp);
                 }else if(fullTimer.getTimerState() == PausableTimer.TimerState.RUNNING){
                     Toast.makeText(MainActivity.this, "Pause", Toast.LENGTH_SHORT).show();
                     fullTimer.pause();
-            //        intervalTimer.pause();
+                    intervalTimer.pause();
                     mPlay.setBackgroundResource(R.drawable.ic_play_circle_outline_black_24dp);
                 }
             }
@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setupIntervalTimer(){
         if(counter < mIntervals.size()) {
-               PausableTimer intervalTimer = new PausableTimer(getSingleInterval(counter), 1000, new OnTickListener() {
+             intervalTimer = new PausableTimer(getSingleInterval(counter), 1000, new OnTickListener() {
                 @Override
                 public void OnTick(long timeLeft) {
                     mIntervalCLock.setText(convertTime(timeLeft));
