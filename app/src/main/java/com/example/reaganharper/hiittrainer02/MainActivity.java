@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
             Long recoveredTimeLeft = savedInstanceState.getLong("Time left");
         }
 
-
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -181,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setupFullTimer(){
-        fullTimer = new PausableTimer(getFullTime(), 1000, new OnTickListener() {
+        fullTimer = new PausableTimer(getFullTime(), 500, new OnTickListener() {
             @Override
             public void OnTick(long timeLeft) {
                 mfullClock.setText(convertTime(timeLeft));
@@ -197,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setupIntervalTimer(){
         if(counter < mIntervals.size()) {
-             intervalTimer = new PausableTimer(getSingleInterval(counter), 1000, new OnTickListener() {
+             intervalTimer = new PausableTimer(getSingleInterval(counter), 500, new OnTickListener() {
                 @Override
                 public void OnTick(long timeLeft) {
                     mIntervalCLock.setText(convertTime(timeLeft));

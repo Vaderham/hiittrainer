@@ -50,7 +50,7 @@ public class PausableTimer{
     }
 
     public void resume(final long currentTime){
-        this.timer = new CountDownTimer(currentTime, 1000) {
+        this.timer = new CountDownTimer(currentTime, 500) {
             @Override
             public void onTick(long l) {
                 tickListener.OnTick(l);
@@ -59,6 +59,8 @@ public class PausableTimer{
             @Override
             public void onFinish() {
                 tickListener.OnTick(0);
+                tickListener.OnFinish();
+                timerState = TimerState.STOPPED;
             }
         };
         this.timer.start();
